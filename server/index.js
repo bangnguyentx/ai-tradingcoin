@@ -9,18 +9,18 @@ const PORT = process.env.PORT || 5000;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// middleware parse JSON
+// parse JSON
 app.use(express.json());
 
-// serve static client build
+// serve client build
 app.use(express.static(path.join(__dirname, "../client/dist")));
 
-// ví dụ route API
+// test API
 app.get("/api/hello", (req, res) => {
   res.json({ message: "Hello from server 🚀" });
 });
 
-// tất cả route khác → trả về index.html (SPA)
+// fallback route (SPA)
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "../client/dist", "index.html"));
 });
@@ -28,13 +28,7 @@ app.get("*", (req, res) => {
 // start server
 app.listen(PORT, () => {
   console.log(`✅ Server running on port ${PORT}`);
-});
-  socket.on("disconnect", () => {
-    console.log("Client disconnected:", socket.id);
-  });
-});
-
-// ==== STATIC CLIENT ==== 
+});// ==== STATIC CLIENT ==== 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
