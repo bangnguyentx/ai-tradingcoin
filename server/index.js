@@ -1,40 +1,34 @@
 import express from "express";
-import cors from "cors";
-import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
-import { Server } from "socket.io";
-import http from "http";
-import fs from "fs";
-
-dotenv.config();
 
 const app = express();
-const server = http.createServer(app);
-const io = new Server(server, {
-  cors: {
-    origin: "*",
-    methods: ["GET", "POST"],
-  },
-});
+const PORT = process.env.PORT || 5000;
 
-app.use(cors());
+// fix __dirname trong ESM
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// middleware parse JSON
 app.use(express.json());
 
-// ==== ROUTES ==== 
-app.post("/api/nap-tien", (req, res) => {
-  const { userId, amount } = req.body;
-  res.json({ success: true, message: `Nạp ${amount} VNĐ cho user ${userId}` });
+// serve static client build
+app.use(express.static(path.join(__dirname, "../client/dist")));
+
+// ví dụ route API
+app.get("/api/hello", (req, res) => {
+  res.json({ message: "Hello from server 🚀" });
 });
 
-app.post("/api/order", (req, res) => {
-  const { service, link, quantity } = req.body;
-  res.json({ success: true, message: `Order ${service} ${quantity} cho ${link}` });
+// tất cả route khác → trả về index.html (SPA)
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "../client/dist", "index.html"));
 });
 
-app.get("/api/check/:orderId", (req, res) => {
-  const { orderId } = req.params;
-  res.json({ success: true, orderId, status: "Đang xử lý" });
+// start server
+app.listen(PORT, () => {
+  console.log(`✅ Server running on port ${PORT}`);
+});  res.json({ success: true, orderId, status: "Đang xử lý" });
 });
 
 // ==== SOCKET.IO ==== 
