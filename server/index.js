@@ -1,40 +1,75 @@
-// server/index.js
 import express from "express";
 import cors from "cors";
-import { createServer } from "http";
-import { Server } from "socket.io";
+import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
-import fs from "fs-extra";
-import axios from "axios";
-import { v4 as uuidv4 } from "uuid";
+import { Server } from "socket.io";
+import http from "http";
+import fs from "fs"; // dùng fs core của Node.js
 
+dotenv.config();
+
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"],
+  },
+});
+
+app.use(cors());
+app.use(express.json());
+
+// ==== ROUTES MẪU ====
+
+// Nạp tiền
+app.post("/api/nap-tien", (req, res) => {
+  const { userId, amount } = req.body;
+  res.json({ success: true, message: `Nạp ${amount} VNĐ cho user ${userId}` });
+});
+
+// Order
+app.post("/api/order", (req, res) => {
+  const { service, link, quantity } = req.body;
+  res.json({
+    success: true,
+    message: `Tạo đơn dịch vụ ${service} với số lượng ${quantity} cho link ${link}`,
+  });
+});
+
+// Check trạng thái
+app.get("/api/check/:orderId", (req, res) => {
+  const { orderId } = req.params;
+  res.json({ success: true, orderId, status: "Đang xử lý" });
+});
+
+// ==== SOCKET.IO ==== 
+io.on("connection", (socket) => {
+  console.log("Client connected:", socket.id);
+
+  socket.on("disconnect", () => {
+    console.log("Client disconnected:", socket.id);
+  });
+});
+
+// ==== STATIC CLIENT BUILD ==== 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const DATA_DIR = path.join(__dirname, "data");
-await fs.ensureDir(DATA_DIR);
+// Nếu có thư mục build client
+const clientPath = path.join(__dirname, "../client/dist");
+if (fs.existsSync(clientPath)) {
+  app.use(express.static(clientPath));
+  app.get("*", (req, res) => {
+    res.sendFile(path.join(clientPath, "index.html"));
+  });
+}
 
-const HISTORY_FILE = path.join(DATA_DIR, "history.json");
-const KEYS_FILE = path.join(DATA_DIR, "keys.json");
-const SESSIONS_FILE = path.join(DATA_DIR, "sessions.json");
-
-if (!(await fs.pathExists(HISTORY_FILE))) await fs.writeJson(HISTORY_FILE, []);
-if (!(await fs.pathExists(KEYS_FILE))) await fs.writeJson(KEYS_FILE, []);
-if (!(await fs.pathExists(SESSIONS_FILE))) await fs.writeJson(SESSIONS_FILE, {});
-
-function readJSON(p) { try { return fs.readJsonSync(p); } catch (e) { return null; } }
-function writeJSON(p, obj) { fs.writeJsonSync(p, obj, { spaces: 2 }); }
-
-// CONFIG
-const AUTO_COINS = ['BTCUSDT','ETHUSDT','SOLUSDT','DOGEUSDT','BNBUSDT'];
-const AUTO_INTERVAL_MIN = 10; // minutes
-const SPECIAL_PHONE = process.env.SPECIAL_PHONE || '0399834208';
-
-// express + socket.io
-const app = express();
-app.use(cors());
-app.use(express.json());
+const PORT = process.env.PORT || 5000;
+server.listen(PORT, () => {
+  console.log(`✅ Server chạy tại http://localhost:${PORT}`);
+});app.use(express.json());
 
 const http = createServer(app);
 const io = new Server(http);
