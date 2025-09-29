@@ -1,16 +1,8 @@
 {
   "name": "ai-tradingcoin",
-  "version": "1.0.0",
   "private": true,
   "scripts": {
-    "install-server": "cd server && npm install",
-    "install-client": "cd client && npm install",
-    "build-client": "cd client && npm run build",
-    "build": "npm run install-server && npm run install-client && npm run build-client",
-    "start-server": "cd server && npm start",
-    "start": "npm run start-server"
-  },
-  "engines": {
-    "node": ">=18"
+    "build": "cd client && npm install && npm run build",
+    "start": "cd server && npm install && npm start"
   }
 }
