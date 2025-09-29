@@ -28,13 +28,7 @@ app.get("*", (req, res) => {
 // start server
 app.listen(PORT, () => {
   console.log(`✅ Server running on port ${PORT}`);
-});  res.json({ success: true, orderId, status: "Đang xử lý" });
 });
-
-// ==== SOCKET.IO ==== 
-io.on("connection", (socket) => {
-  console.log("Client connected:", socket.id);
-
   socket.on("disconnect", () => {
     console.log("Client disconnected:", socket.id);
   });
